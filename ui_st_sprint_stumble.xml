@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+	<string id="ui_mcm_menu_sprint_stumble">
+		<text>Sprint Stumble</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_title">
+		<text>Sprint Stumble</text>
+	</string>
+
+	<!-- Debug Mode -->
+	<string id="ui_mcm_sprint_stumble_DEBUG_MODE">
+		<text>Debug Mode</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_DEBUG_MODE_desc">
+		<text>Enable when using Debug Mode. Reload the game to take effect (Not Exit).</text>
+	</string>
+	<!-- Debug Mode -->
+
+	<!-- Console log -->
+	<string id="ui_mcm_sprint_stumble_CONSOLE_LOG">
+		<text>Console Log</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_CONSOLE_LOG_desc">
+		<text>Output logs in the Console. Helpful when debugging or knowing what is happening.</text>
+	</string>
+	<!-- Console log -->
+
+	<string id="ui_mcm_sprint_stumble_BANDIT_PAIN">
+		<text>Bandit Pain Sounds</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_BANDIT_PAIN_desc">
+		<text>Play Bandit pain sounds when stumbled. (For Fun)</text>
+	</string>
+
+	<!-- <string id="ui_mcm_sprint_stumble_"> -->
+	<!-- 	<text></text> -->
+	<!-- </string> -->
+
+
+</string_table>
