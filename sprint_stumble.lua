@@ -108,46 +108,57 @@ function actor_on_footstep(mat)
 
 	-- the stumbling will only happen when sprinting
 	if IsMoveState('mcSprint') then
-		if is_blowout_psistorm_weather() then
-			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-		elseif WET_WEATHER[current_weather] then
-			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
+		if WET_WEATHERS_ONLY then
+			if is_blowout_psistorm_weather() then
+				weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
+			else
+				weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
+			end
+
 		else
-			weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
+
 		end
 
-		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
-			weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
-		end
-
-		-- inventory weight factor
-		if current_inv_weight > max_inv_weight then
-			inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-		else
-			inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-			inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
-		end
-
-		-- health factor
-		health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
-
-		-- randomize weather factor and inentory weight factor to for pure luck
-		rnd_weather_factor = math.random(0, weather_factor)
-		rnd_inv_weight_factor = math.random(0, inv_weight_factor)
-
-		-- total all factors and deduc it to 100
+		-- if is_blowout_psistorm_weather() then
+		-- 	weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
+		-- elseif WET_WEATHER[current_weather] then
+		-- 	weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
+		-- else
+		-- 	weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
+		-- end
+		--
+		-- if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
+		-- 	weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
+		-- end
+		--
+		-- -- inventory weight factor
+		-- if current_inv_weight > max_inv_weight then
+		-- 	inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
+		-- else
+		-- 	inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
+		-- 	inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
+		-- end
+		--
+		-- -- health factor
+		-- health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
+		--
+		-- -- randomize weather factor and inentory weight factor to for pure luck
+		-- rnd_weather_factor = math.random(0, weather_factor)
+		-- rnd_inv_weight_factor = math.random(0, inv_weight_factor)
+		--
+		-- -- total all factors and deduc it to 100
+		-- -- total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
 		-- total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
-		total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
-
-		-- chance of stumbling
-		-- the lower the total_stability, the higher the chance it will pick 0
-		stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
-		stability = math.random(0, stability)
-
-		-- if stability is 0 based on randomization then the character will stumble
-		if stability == 0 then
-			stumble_effects()
-		end
+		--
+		-- -- chance of stumbling
+		-- -- the lower the total_stability, the higher the chance it will pick 0
+		-- stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
+		-- stability = math.random(0, stability)
+		--
+		-- -- if stability is 0 based on randomization then the character will stumble
+		-- if stability == 0 then
+		-- 	stumble_effects()
+		-- end
 	end
 
 	if CONSOLE_LOG == true then
