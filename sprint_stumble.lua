@@ -133,7 +133,7 @@ function actor_on_footstep(mat)
 			-- compute stability
 			stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
 
-			-- if stability is 0 based on randomization then the character will stumble
+			-- when stability is 0 based on randomization then the character will stumble
 			if stability == 0 then
 				stumble_effects()
 			end
