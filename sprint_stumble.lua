@@ -86,25 +86,25 @@ function actor_on_first_update()
 end
 
 function actor_on_footstep(mat)
-	local health = db.actor.health
-	local health_factor = 0
-
-	-- weather to material factor
-	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
-	local weather_factor = 0
-	local rnd_weather_factor = 0
-
-	-- Current weight
-	local current_inv_weight = db.actor:get_total_weight()
-	local max_inv_weight = get_max_inv_weight()
-	local inv_weight_factor = 0
-	local rnd_inv_weight_factor = 0
-
-	local total_stability = 100	-- 100%
-	local stability = 100
-
 	-- the stumbling will only happen when sprinting
 	if IsMoveState('mcSprint') then
+		local health = db.actor.health
+		local health_factor = 0
+
+		-- weather to material factor
+		local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+		local weather_factor = 0
+		local rnd_weather_factor = 0
+
+		-- Current weight
+		local current_inv_weight = db.actor:get_total_weight()
+		local max_inv_weight = get_max_inv_weight()
+		local inv_weight_factor = 0
+		local rnd_inv_weight_factor = 0
+
+		local total_stability = 100	-- 100%
+		local stability = 100
+
 		if is_blowout_psistorm_weather() then
 			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
 		elseif WET_WEATHER[current_weather] then
@@ -113,6 +113,11 @@ function actor_on_footstep(mat)
 			weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 		end
 
+		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
+			weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
+		end
+
+		-- if stability is 0 based on randomization then the character will stumble
 		-- inventory weight factor
 		if current_inv_weight > max_inv_weight then
 			inv_weight_factor = INV_WEIGHT_MULTIPLIER
@@ -178,6 +183,7 @@ function actor_on_footstep(mat)
 		printf("--------------------")
 	end
 end
+
 
 -- copied from ui_inventory.script
 function get_max_inv_weight()
