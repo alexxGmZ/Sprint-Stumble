@@ -90,92 +90,113 @@ function actor_on_first_update()
 end
 
 function actor_on_footstep(mat)
-	local health = db.actor.health
-	local health_factor = 0
-
-	-- weather to material factor
-	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
-	local weather_factor = 0
-
-	-- Current weight
-	local current_inv_weight = db.actor:get_total_weight()
-	local max_inv_weight = get_max_inv_weight()
-	local inv_weight_factor = 0
-
-	-- default total stability
-	local stability = 100
-
 	-- the stumbling will only happen when sprinting
 	if IsMoveState('mcSprint') then
-		-- stumble on wet weathers only
-		if WET_WEATHERS_ONLY and WET_WEATHER[current_weather] then
-			if is_blowout_psistorm_weather() then
-				weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-			else
-				weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-			end
+		if WET_WEATHERS_ONLY then
+			wet_weather_only_logic(mat)
+			return
+		end
 
-			if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
-				weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
-			end
+		local health = db.actor.health
+		-- local health_factor = 0
+		local health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
 
-			-- inventory weight factor
-			if current_inv_weight > max_inv_weight then
-				inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-			else
-				inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-				inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
-			end
+		-- weather to material factor
+		local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+		-- local weather_factor = 0
+		local weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 
-			-- health factor
-			health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
+		-- Current weight
+		local current_inv_weight = db.actor:get_total_weight()
+		local max_inv_weight = get_max_inv_weight()
+		-- local inv_weight_factor = 0
+		local inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
+		inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
 
-			-- compute stability
-			stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
+		-- default total stability
+		local stability = 100
 
-			-- when stability is 0 based on randomization then the character will stumble
-			if stability == 0 then
-				stumble_effects()
-			end
 
-		-- stumble on all weather types
-		else
-			if is_blowout_psistorm_weather() then
-				weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-			elseif WET_WEATHER[current_weather] then
-				weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-			else
-				weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
-			end
+		-- inventory weight factor logic
+		if current_inv_weight > max_inv_weight then
+			inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
+		-- else
+		-- 	inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
+		-- 	inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
+		end
 
-			if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
-				weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
-			end
+		-- health_factor logic
+		-- health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
 
-			-- inventory weight factor
-			if current_inv_weight > max_inv_weight then
-				inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-			else
-				inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-				inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
-			end
+		if is_blowout_psistorm_weather() then
+			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
+		elseif WET_WEATHER[current_weather] then
+			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
+		-- else
+		-- 	weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
+		end
 
-			-- health factor
-			health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
+		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
+			weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
+		end
 
-			-- compute stability
-			stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
+		-- compute stability
+		stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
 
-			-- if stability is 0 based on randomization then the character will stumble
-			if stability == 0 then
-				stumble_effects()
-			end
+		-- if stability is 0 based on randomization then the character will stumble
+		if stability == 0 then
+			stumble_effects()
 		end
 
 		-- toggle logging in the console
 		if CONSOLE_LOG then
 			console_log(mat, weather_factor, inv_weight_factor, health_factor, stability, current_weather)
 		end
+	end
+end
+
+function wet_weather_only_logic(material)
+	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+
+	if not WET_WEATHER[current_weather] then
+		return
+	end
+
+	local stability = 100
+
+	local health = db.actor.health
+	local health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
+
+	-- weather to material factor
+	-- local weather_factor = 0
+	local weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[material] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
+	if is_blowout_psistorm_weather() then
+		weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
+	end
+
+	if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
+		weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
+	end
+
+	-- Current weight
+	local current_inv_weight = db.actor:get_total_weight()
+	local max_inv_weight = get_max_inv_weight()
+
+	-- local inv_weight_factor = 0
+	local inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
+	inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
+
+	if inv_weight_factor > max_inv_weight then
+		inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
+	end
+
+	stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
+	if stability == 0 then
+		stumble_effects()
+	end
+
+	if CONSOLE_LOG then
+		console_log(material, weather_factor, inv_weight_factor, health_factor, stability, current_weather)
 	end
 end
 
