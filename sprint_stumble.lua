@@ -120,20 +120,12 @@ function actor_on_footstep(mat)
 		-- inventory weight factor logic
 		if current_inv_weight > max_inv_weight then
 			inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-		-- else
-		-- 	inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-		-- 	inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
 		end
-
-		-- health_factor logic
-		-- health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
 
 		if is_blowout_psistorm_weather() then
 			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
 		elseif WET_WEATHER[current_weather] then
 			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-		-- else
-		-- 	weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 		end
 
 		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
