@@ -10,15 +10,12 @@
 local CreateTimeEvent = demonized_time_events.CreateTimeEvent
 local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
-local DISABLE_SPRINT_STUMBLE = false
 local DEBUG_MODE = false
 local CONSOLE_LOG = false -- true if you want to output the logs in the console
-local BANDIT_PAIN = true
-local WET_WEATHERS_ONLY = false
+local BANDIT_PAIN = false
 
-local MAX_HEALTH_MULTIPLIER = 40
-local MAX_INV_WEIGHT_MULTIPLIER = 10
-local MAX_WEATHER_TO_MATERIAL_MULTIPLIER = 30
+local HEALTH_MULTIPLIER = 40
+local INV_WEIGHT_MULTIPLIER = 10
 
 -- dry weather material factor
 local DEFAULT_MATERIAL_MULTIPLIER = 5
@@ -75,7 +72,6 @@ function load_settings()
 		DEBUG_MODE = ui_mcm.get("sprint_stumble/DEBUG_MODE")
 		CONSOLE_LOG = ui_mcm.get("sprint_stumble/CONSOLE_LOG")
 		BANDIT_PAIN = ui_mcm.get("sprint_stumble/BANDIT_PAIN")
-		WET_WEATHERS_ONLY = ui_mcm.get("sprint_stumble/WET_WEATHERS_ONLY")
 	end
 end
 
@@ -96,143 +92,91 @@ function actor_on_footstep(mat)
 	-- weather to material factor
 	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
 	local weather_factor = 0
+	local rnd_weather_factor = 0
 
 	-- Current weight
 	local current_inv_weight = db.actor:get_total_weight()
 	local max_inv_weight = get_max_inv_weight()
 	local inv_weight_factor = 0
+	local rnd_inv_weight_factor = 0
 
-	-- default total stability
+	local total_stability = 100	-- 100%
 	local stability = 100
 
 	-- the stumbling will only happen when sprinting
 	if IsMoveState('mcSprint') then
-		-- stumble on wet weathers only
-		if WET_WEATHERS_ONLY and WET_WEATHER[current_weather] then
-			if is_blowout_psistorm_weather() then
-				weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-			else
-				weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-			end
-
-			if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
-				weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
-			end
-
-			-- inventory weight factor
-			if current_inv_weight > max_inv_weight then
-				inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-			else
-				inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-				inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
-			end
-
-			-- health factor
-			health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
-
-			-- compute stability
-			stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
-
-			-- when stability is 0 based on randomization then the character will stumble
-			if stability == 0 then
-				stumble_effects()
-			end
-
-		-- stumble on all weather types
+		if is_blowout_psistorm_weather() then
+			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
+		elseif WET_WEATHER[current_weather] then
+			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
 		else
-			if is_blowout_psistorm_weather() then
-				weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-			elseif WET_WEATHER[current_weather] then
-				weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-			else
-				weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
-			end
-
-			if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
-				weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
-			end
-
-			-- inventory weight factor
-			if current_inv_weight > max_inv_weight then
-				inv_weight_factor = MAX_INV_WEIGHT_MULTIPLIER
-			else
-				inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
-				inv_weight_factor = denormalize(inv_weight_factor, 0, MAX_INV_WEIGHT_MULTIPLIER)
-			end
-
-			-- health factor
-			health_factor = denormalize(health, MAX_HEALTH_MULTIPLIER, 0)
-
-			-- compute stability
-			stability = compute_stability(weather_factor, inv_weight_factor, health_factor)
-
-			-- if stability is 0 based on randomization then the character will stumble
-			if stability == 0 then
-				stumble_effects()
-			end
+			weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 		end
 
-		-- toggle logging in the console
-		if CONSOLE_LOG then
-			console_log(mat, weather_factor, inv_weight_factor, health_factor, stability, current_weather)
+		-- inventory weight factor
+		if current_inv_weight > max_inv_weight then
+			inv_weight_factor = INV_WEIGHT_MULTIPLIER
+		else
+			inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
+			inv_weight_factor = denormalize(inv_weight_factor, 0, INV_WEIGHT_MULTIPLIER)
+		end
+
+		-- health factor
+		health_factor = denormalize(health, HEALTH_MULTIPLIER, 0)
+
+		-- randomize weather factor and inentory weight factor to for pure luck
+		rnd_weather_factor = math.random(0, weather_factor)
+		rnd_inv_weight_factor = math.random(0, inv_weight_factor)
+
+		-- total all factors and deduc it to 100
+		-- total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
+		total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
+
+		-- chance of stumbling
+		-- the lower the total_stability, the higher the chance it will pick 0
+		stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
+		stability = math.random(0, stability)
+
+		-- if stability is 0 based on randomization then the character will stumble
+		if stability == 0 then
+			-- jump to prone when stumbled
+			level.press_action(bind_to_dik(key_bindings.kCROUCH))
+			level.press_action(bind_to_dik(key_bindings.kACCEL))
+
+			-- play pain sounds when grok's body health system is installed
+			hurt_sound()
+
+			if not game.actor_weapon_lowered() then
+				game.actor_lower_weapon(true)
+			end
+			level.add_cam_effector("script\\sprint_stumble.anm", 1, false, "")
+
+			-- fixes the unable to ammo-check when stumbled
+			level.release_action(bind_to_dik(key_bindings.kACCEL))
 		end
 	end
-end
 
-function compute_stability(weather, inv_weight, health)
-	-- total stability is 100 or 100%
-	local stability = 100
-
-	-- randomize weather and inventory weight factors
-	weather = math.random(0, weather)
-	inv_weight = math.random(0, inv_weight)
-
-	-- deduc all factors to 100
-	stability = stability - (weather + inv_weight + health)
-
-	-- randomize total stability
-	return math.random(0, stability)
-end
-
-function stumble_effects()
-	-- jump to prone when stumbled
-	level.press_action(bind_to_dik(key_bindings.kCROUCH))
-	level.press_action(bind_to_dik(key_bindings.kACCEL))
-
-	-- play pain sounds when grok's body health system is installed
-	hurt_sound()
-
-	if not game.actor_weapon_lowered() then
-		game.actor_lower_weapon(true)
+	if CONSOLE_LOG == true then
+		printf("material: " .. mat)
+		printf("current_weather: " .. current_weather)
+		printf("FIRST_LEVEL_WEATHER: " .. FIRST_LEVEL_WEATHER)
+		printf("--------------------")
+		printf("total weight: " .. current_inv_weight)
+		printf("max_weight: " .. max_inv_weight)
+		printf("--------------------")
+		printf("health_factor: " .. health_factor)
+		printf("--------------------")
+		printf("inv_weight_factor: " .. inv_weight_factor)
+		printf("rnd_inv_weight_factor: " .. rnd_inv_weight_factor)
+		printf("--------------------")
+		printf("weather_factor: " .. weather_factor)
+		printf("rnd_weather_factor: " .. rnd_weather_factor)
+		printf("--------------------")
+		printf("total_stability: " .. total_stability)
+		printf("stability: " .. stability)
+		printf("--------------------")
+		printf("--------------------")
 	end
-	level.add_cam_effector("script\\sprint_stumble.anm", 1, false, "")
-
-	-- fixes the unable to ammo-check when stumbled
-	level.release_action(bind_to_dik(key_bindings.kACCEL))
-end
-
--- copied from grok's body health system (zzz_player_injuries.script)
--- pain sounds when grok's body health system is installed
-function hurt_sound()
-	local file
-	local sound_play = math.random(1,13)
-	local helmet = (db.actor:item_in_slot(12) or db.actor:get_current_outfit())
-
-	if BANDIT_PAIN == true then
-		-- use the bandit sounds
-		file = "sprint_stumble_bandit\\pain_" .. sound_play
-	elseif helmet then
-		-- use grok's body heatlh system muffled sounds
-		muffle = "m_"
-		file = "bhs\\" .. muffle .. "pain_" .. sound_play
-	else
-		-- use grok's body heatlh system sounds
-		muffle = ""
-		file = "actor\\pain_" .. sound_play
-	end
-
-	file_to_say = sound_object( file )
-	file_to_say:play(db.actor,0,sound_object.s2d)
 end
 
 -- copied from ui_inventory.script
@@ -266,13 +210,25 @@ function get_max_inv_weight()
 	return max_weight
 end
 
-function console_log(material, weather_factor, inv_weight_factor, health_factor, stability, weather)
-	printf("material %s", material)
-	printf("weather %s", weather)
-	printf("weather_factor %s", weather_factor)
-	printf("inv_weight_factor %s", inv_weight_factor)
-	printf("health_factor %s", health_factor)
-	printf("stability %s", stability)
+-- copied from grok's body health system (zzz_player_injuries.script)
+-- pain sounds when grok's body health system is installed
+function hurt_sound()
+	local file
+	local sound_play = math.random(1,13)
+	local helmet = (db.actor:item_in_slot(12) or db.actor:get_current_outfit())
+
+	if BANDIT_PAIN == true then
+		file = "sprint_stumble_bandit\\pain_" .. sound_play
+	elseif helmet then
+		muffle = "m_"
+		file = "bhs\\" .. muffle .. "pain_" .. sound_play
+	else
+		muffle = ""
+		file = "actor\\pain_" .. sound_play
+	end
+
+	file_to_say = sound_object( file )
+	file_to_say:play(db.actor,0,sound_object.s2d)
 end
 
 function is_blowout_psistorm_weather()
