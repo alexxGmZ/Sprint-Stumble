@@ -16,6 +16,7 @@ local BANDIT_PAIN = false
 
 local HEALTH_MULTIPLIER = 40
 local INV_WEIGHT_MULTIPLIER = 10
+local MAX_WEATHER_TO_MATERIAL_MULTIPLIER = 30
 
 -- dry weather material factor
 local DEFAULT_MATERIAL_MULTIPLIER = 5
@@ -159,28 +160,27 @@ function actor_on_footstep(mat)
 			-- fixes the unable to ammo-check when stumbled
 			level.release_action(bind_to_dik(key_bindings.kACCEL))
 		end
-	end
 
-	if CONSOLE_LOG == true then
-		printf("material: " .. mat)
-		printf("current_weather: " .. current_weather)
-		printf("FIRST_LEVEL_WEATHER: " .. FIRST_LEVEL_WEATHER)
-		printf("--------------------")
-		printf("total weight: " .. current_inv_weight)
-		printf("max_weight: " .. max_inv_weight)
-		printf("--------------------")
-		printf("health_factor: " .. health_factor)
-		printf("--------------------")
-		printf("inv_weight_factor: " .. inv_weight_factor)
-		printf("rnd_inv_weight_factor: " .. rnd_inv_weight_factor)
-		printf("--------------------")
-		printf("weather_factor: " .. weather_factor)
-		printf("rnd_weather_factor: " .. rnd_weather_factor)
-		printf("--------------------")
-		printf("total_stability: " .. total_stability)
-		printf("stability: " .. stability)
-		printf("--------------------")
-		printf("--------------------")
+		if CONSOLE_LOG == true then
+			printf("material: " .. mat)
+			printf("current_weather: " .. current_weather)
+			printf("--------------------")
+			printf("total weight: " .. current_inv_weight)
+			printf("max_weight: " .. max_inv_weight)
+			printf("--------------------")
+			printf("health_factor: " .. health_factor)
+			printf("--------------------")
+			printf("inv_weight_factor: " .. inv_weight_factor)
+			printf("rnd_inv_weight_factor: " .. rnd_inv_weight_factor)
+			printf("--------------------")
+			printf("weather_factor: " .. weather_factor)
+			printf("rnd_weather_factor: " .. rnd_weather_factor)
+			printf("--------------------")
+			printf("total_stability: " .. total_stability)
+			printf("stability: " .. stability)
+			printf("--------------------")
+			printf("--------------------")
+		end
 	end
 end
 
