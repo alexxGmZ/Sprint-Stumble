@@ -10,6 +10,7 @@
 local CreateTimeEvent = demonized_time_events.CreateTimeEvent
 local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
+local ENABLE = true
 local DEBUG_MODE = false
 local CONSOLE_LOG = false -- true if you want to output the logs in the console
 local BANDIT_PAIN = false
@@ -70,6 +71,7 @@ local BLOWOUT_PSISTORM_WEATHER = {
 -- MCM support
 function load_settings()
 	if ui_mcm then
+		ENABLE = ui_mcm.get("sprint_stumble/ENABLE")
 		DEBUG_MODE = ui_mcm.get("sprint_stumble/DEBUG_MODE")
 		CONSOLE_LOG = ui_mcm.get("sprint_stumble/CONSOLE_LOG")
 		BANDIT_PAIN = ui_mcm.get("sprint_stumble/BANDIT_PAIN")
@@ -87,6 +89,9 @@ function actor_on_first_update()
 end
 
 function actor_on_footstep(mat)
+	if not ENABLE then
+		return
+	end
 	-- the stumbling will only happen when sprinting
 	if IsMoveState('mcSprint') then
 		local health = db.actor.health
