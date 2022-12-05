@@ -10,4 +10,153 @@
 
 **MCM is Supported**
 
-Gives the character to stumble when sprinting depending on the **weather, inventory weight, and health**.
+Gives the character to stumble when sprinting depending on the **weather, inventory
+weight, and health**.
+
+<br>
+
+
+## How it Works
+
+The computation of the probability is **not 0 to 1 but 0 to 100**. So 10% is not 0.1 but
+10, 25% is not 0.25 but 25%.
+
+<br>
+
+
+### Weather to Ground Material Factor (30%)
+
+To increase the percentage, change the value of this variable.
+```lua
+local MAX_WEATHER_TO_MATERIAL_MULTIPLIER = 30
+```
+
+Ground materials increases the chance of stumbling depending on the weather. If the
+materials are not listed below the MATERIAL_MULTIPLIER variable, the default value is
+going to be the value of DEFAULT_MATERIAL_MULTIPLIER.
+```lua
+-- dry weather material factor
+local DEFAULT_MATERIAL_MULTIPLIER = 5
+local MATERIAL_MULTIPLIER = {
+	["materials\\earth"] = 10,
+	["materials\\grass"] = 10,
+	["materials\\wooden_board"] = 5,
+	["materials\\gravel"] = 15,
+	["materials\\bush"] = 20,
+	["materials\\water"] = 30,
+	["materials\\tree_trunk"] = 5,
+	["materials\\body"] = 15,
+	["materials\\monster_body"] = 15,
+	["materials\\dead_body"] = 15,
+	["materials\\metal"] = 5,
+}
+```
+
+The chances increases during rainy or stormy weathers. If the materials are not inside the
+WET_WEATHER_MATERIAL_MULTIPLIER, then the default value will be the value of
+DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER.
+```lua
+local WET_WEATHER = {
+	w_rain1 = true,
+	w_rain2 = true,
+	w_rain3 = true,
+	w_storm1 = true,
+	w_storm2 = true,
+}
+
+-- wet weathers should make the materials a little bit slippery
+local DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER = 10
+local WET_WEATHER_MATERIAL_MULTIPLIER = {
+	["materials\\earth"] = 20,
+	["materials\\grass"] = 20,
+	["materials\\wooden_board"] = 15,
+	["materials\\gravel"] = 20,
+	["materials\\bush"] = 20,
+	["materials\\water"] = 30,
+	["materials\\tree_trunk"] = 25,
+	["materials\\body"] = 20,
+	["materials\\monster_body"] = 20,
+	["materials\\dead_body"] = 20,
+	["materials\\metal"] = 20,
+}
+```
+
+During Psi Storm and Emissions the Chance will maxed out to 30. Why? **To increase the
+suffering that's why**.
+```lua
+-- for more tense running to cover
+local BLOWOUT_PSISTORM_WEATHER_MULTIPLIER = 30
+local BLOWOUT_PSISTORM_WEATHER = {
+	fx_blowout_day = true,
+	fx_blowout_night = true,
+	fx_psi_storm_day = true,
+	fx_psi_storm_night = true
+}
+```
+
+The numbers can be modified as long as they are less than or equal to 30.
+
+<br>
+
+
+### Weight Factor (10%)
+
+Why only 10%? Because most of the time the actor or the character always carry at least
+70% of the max carry weight.
+
+To change the percentage of the Weight Factor, just change the value of this variable.
+```lua
+local INV_WEIGHT_MULTIPLIER = 10
+```
+
+<br>
+
+
+### Health Factor (40%)
+
+Health has the largest factor because you can't run well if you're not also feeling well.
+
+To change the percentage, just change the value of this variable.
+```lua
+local HEALTH_MULTIPLIER = 40
+```
+
+### Totalling of the Three Factors
+
+The weather factor and the weight factor will be randomized.
+```lua
+-- randomize weather factor and inentory weight factor to for pure luck
+rnd_weather_factor = math.random(0, weather_factor)
+rnd_inv_weight_factor = math.random(0, inv_weight_factor)
+```
+
+The three factors will be totaled and will be deducted to 100. The closer the stability to
+0, the higher the chance the character will stumble.
+```lua
+-- chance of stumbling
+-- the lower the total_stability, the higher the chance it will pick 0
+local stability = 100
+stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
+stability = math.random(0, stability)
+```
+
+If ```stability``` become 0, then the character will stumble.
+```lua
+-- if stability is 0 based on randomization then the character will stumble
+if stability == 0 then
+	-- jump to prone when stumbled
+	level.press_action(bind_to_dik(key_bindings.kCROUCH))
+	level.press_action(bind_to_dik(key_bindings.kACCEL))
+
+	-- play pain sounds when grok's body health system is installed
+	hurt_sound()
+
+	if not game.actor_weapon_lowered() then
+		game.actor_lower_weapon(true)
+	end
+	level.add_cam_effector("script\\sprint_stumble.anm", 1, false, "")
+
+	-- fixes the unable to ammo-check when stumbled
+	level.release_action(bind_to_dik(key_bindings.kACCEL))
+end
+```
