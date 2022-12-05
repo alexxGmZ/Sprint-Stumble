@@ -10,10 +10,13 @@
 local CreateTimeEvent = demonized_time_events.CreateTimeEvent
 local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
+-- change these values in sprint_stumble_mcm.script
 local ENABLE = true
+local HEALTH_AMOUNT_TRIGGER = 100
 local DEBUG_MODE = false
-local CONSOLE_LOG = false -- true if you want to output the logs in the console
+local CONSOLE_LOG = false
 local BANDIT_PAIN = false
+-- change these values in sprint_stumble_mcm.script
 
 local HEALTH_MULTIPLIER = 40
 local INV_WEIGHT_MULTIPLIER = 10
@@ -72,6 +75,7 @@ local BLOWOUT_PSISTORM_WEATHER = {
 function load_settings()
 	if ui_mcm then
 		ENABLE = ui_mcm.get("sprint_stumble/ENABLE")
+		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER")
 		DEBUG_MODE = ui_mcm.get("sprint_stumble/DEBUG_MODE")
 		CONSOLE_LOG = ui_mcm.get("sprint_stumble/CONSOLE_LOG")
 		BANDIT_PAIN = ui_mcm.get("sprint_stumble/BANDIT_PAIN")
@@ -92,9 +96,11 @@ function actor_on_footstep(mat)
 	if not ENABLE then
 		return
 	end
+
+	local health = db.actor.health
+
 	-- the stumbling will only happen when sprinting
-	if IsMoveState('mcSprint') then
-		local health = db.actor.health
+	if IsMoveState('mcSprint') and health <= HEALTH_AMOUNT_TRIGGER then
 		local health_factor = 0
 
 		-- weather to material factor
