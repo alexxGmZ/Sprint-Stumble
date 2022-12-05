@@ -12,7 +12,7 @@ local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
 -- change these values in sprint_stumble_mcm.script
 local ENABLE = true
-local HEALTH_AMOUNT_TRIGGER = 100
+local HEALTH_AMOUNT_TRIGGER
 local DEBUG_MODE = false
 local CONSOLE_LOG = false
 local BANDIT_PAIN = false
@@ -75,7 +75,7 @@ local BLOWOUT_PSISTORM_WEATHER = {
 function load_settings()
 	if ui_mcm then
 		ENABLE = ui_mcm.get("sprint_stumble/ENABLE")
-		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER")
+		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER") * 0.01
 		DEBUG_MODE = ui_mcm.get("sprint_stumble/DEBUG_MODE")
 		CONSOLE_LOG = ui_mcm.get("sprint_stumble/CONSOLE_LOG")
 		BANDIT_PAIN = ui_mcm.get("sprint_stumble/BANDIT_PAIN")
@@ -100,7 +100,7 @@ function actor_on_footstep(mat)
 	local health = db.actor.health
 
 	-- the stumbling will only happen when sprinting
-	if IsMoveState('mcSprint') and health <= HEALTH_AMOUNT_TRIGGER then
+	if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
 		local health_factor = 0
 
 		-- weather to material factor
@@ -180,6 +180,8 @@ function actor_on_footstep(mat)
 			printf("max_weight: " .. max_inv_weight)
 			printf("--------------------")
 			printf("health_factor: " .. health_factor)
+			printf("health " .. health)
+			printf("HEALTH_AMOUNT_TRIGGER " .. HEALTH_AMOUNT_TRIGGER)
 			printf("--------------------")
 			printf("inv_weight_factor: " .. inv_weight_factor)
 			printf("rnd_inv_weight_factor: " .. rnd_inv_weight_factor)
@@ -189,7 +191,6 @@ function actor_on_footstep(mat)
 			printf("--------------------")
 			printf("total_stability: " .. total_stability)
 			printf("stability: " .. stability)
-			printf("--------------------")
 			printf("--------------------")
 		end
 	end

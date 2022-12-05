@@ -8,6 +8,27 @@
 		<text>Sprint Stumble</text>
 	</string>
 
+	<!-- Enable -->
+	<string id="ui_mcm_sprint_stumble_ENABLE">
+		<text>Enable</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_ENABLE_desc">
+		<text>Enable Sprint Stumbl</text>
+	</string>
+	<!-- Enable -->
+
+	<!-- Health Amount Trigger -->
+	<string id="ui_mcm_sprint_stumble_HEALTH_AMOUNT_TRIGGER">
+		<text>Health Amount Trigger</text>
+	</string>
+
+	<string id="ui_mcm_sprint_stumble_HEALTH_AMOUNT_TRIGGER_desc">
+		<text>The amount of health where Stumbling will happen</text>
+	</string>
+
+	<!-- Health Amount Trigger -->
+
 	<!-- Debug Mode -->
 	<string id="ui_mcm_sprint_stumble_DEBUG_MODE">
 		<text>Debug Mode</text>
