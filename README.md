@@ -121,6 +121,9 @@ To change the percentage, just change the value of this variable.
 local HEALTH_MULTIPLIER = 40
 ```
 
+<br>
+
+
 ### Totalling of the Three Factors
 
 The weather factor and the weight factor will be randomized.
