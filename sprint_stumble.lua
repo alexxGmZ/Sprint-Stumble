@@ -84,7 +84,7 @@ end
 
 local FIRST_LEVEL_WEATHER = nil
 function actor_on_first_update()
-	if is_blowout_psistorm_weather() and DEBUG_MODE == true then
+	if is_blowout_psistorm_weather() and DEBUG_MODE then
 		FIRST_LEVEL_WEATHER = nil
 	else
 		FIRST_LEVEL_WEATHER = get_current_weather_file()
@@ -97,53 +97,60 @@ function actor_on_footstep(mat)
 		return
 	end
 
+	-- health amount variable
 	local health = db.actor.health
+
+	-- current weather variable
+	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+
+	-- weight variables
+	local current_inv_weight = db.actor:get_total_weight()
+	local max_inv_weight = get_max_inv_weight()
+	local overweight = current_inv_weight > max_inv_weight
+
+	-- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
+	if WET_WEATHER[current_weather] or overweight then
+		HEALTH_AMOUNT_TRIGGER = 1
+	end
 
 	-- the stumbling will only happen when sprinting
 	if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
-		local health_factor = 0
+		-- health factor variable
+		local health_factor = denormalize(health, HEALTH_MULTIPLIER, 0) or 0
 
-		-- weather to material factor
-		local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
-		local weather_factor = 0
-		local rnd_weather_factor = 0
-
-		-- Current weight
-		local current_inv_weight = db.actor:get_total_weight()
-		local max_inv_weight = get_max_inv_weight()
-		local inv_weight_factor = 0
-		local rnd_inv_weight_factor = 0
-
-		local total_stability = 100	-- 100%
-		local stability = 100
-
+		-- weather to material factor variables
+		local weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 		if is_blowout_psistorm_weather() then
 			weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
 		elseif WET_WEATHER[current_weather] then
 			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-		else
-			weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
 		end
 
 		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
 			weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
 		end
 
+		local rnd_weather_factor = math.random(0, weather_factor)
+
+		-- weight factor variables
+		local inv_weight_factor = 0
+		local rnd_inv_weight_factor = 0
+
 		-- if stability is 0 based on randomization then the character will stumble
 		-- inventory weight factor
-		if current_inv_weight > max_inv_weight then
+		if overweight then
 			inv_weight_factor = INV_WEIGHT_MULTIPLIER
 		else
 			inv_weight_factor = normalize(current_inv_weight, 0, max_inv_weight)
 			inv_weight_factor = denormalize(inv_weight_factor, 0, INV_WEIGHT_MULTIPLIER)
 		end
 
-		-- health factor
-		health_factor = denormalize(health, HEALTH_MULTIPLIER, 0)
-
 		-- randomize weather factor and inentory weight factor to for pure luck
-		rnd_weather_factor = math.random(0, weather_factor)
 		rnd_inv_weight_factor = math.random(0, inv_weight_factor)
+
+		-- stability variables
+		local total_stability = 100	-- 100%
+		local stability = 100
 
 		-- total all factors and deduc it to 100
 		-- total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
@@ -172,7 +179,7 @@ function actor_on_footstep(mat)
 			level.release_action(bind_to_dik(key_bindings.kACCEL))
 		end
 
-		if CONSOLE_LOG == true then
+		if CONSOLE_LOG then
 			printf("material: " .. mat)
 			printf("current_weather: " .. current_weather)
 			printf("--------------------")
@@ -180,9 +187,8 @@ function actor_on_footstep(mat)
 			printf("max_weight: " .. max_inv_weight)
 			printf("--------------------")
 			printf("health_factor: " .. health_factor)
-			printf("health " .. health)
-			printf("HEALTH_AMOUNT_TRIGGER " .. HEALTH_AMOUNT_TRIGGER)
 			printf("--------------------")
+			printf("overweight %s", overweight)
 			printf("inv_weight_factor: " .. inv_weight_factor)
 			printf("rnd_inv_weight_factor: " .. rnd_inv_weight_factor)
 			printf("--------------------")
@@ -235,7 +241,7 @@ function hurt_sound()
 	local sound_play = math.random(1,13)
 	local helmet = (db.actor:item_in_slot(12) or db.actor:get_current_outfit())
 
-	if BANDIT_PAIN == true then
+	if BANDIT_PAIN then
 		file = "sprint_stumble_bandit\\pain_" .. sound_play
 	elseif helmet then
 		muffle = "m_"
