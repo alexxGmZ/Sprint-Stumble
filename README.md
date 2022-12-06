@@ -186,11 +186,11 @@ The character will stumble when sprinting, it still depends on the three trigger
 
 ```lua
 local WET_WEATHER = {
-	w_rain1 = true,
-	w_rain2 = true,
-	w_rain3 = true,
-	w_storm1 = true,
-	w_storm2 = true,
+   w_rain1 = true,
+   w_rain2 = true,
+   w_rain3 = true,
+   w_storm1 = true,
+   w_storm2 = true,
 }
 
 -- get the assigned value in MCM
@@ -201,21 +201,21 @@ function load_settings()
 end
 
 function actor_on_footstep(mat)
-	-- health amount variable
-	local health = db.actor.health
+   -- health amount variable
+   local health = db.actor.health
 
-	-- current weather variable
-	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+   -- current weather variable
+   local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
 
-	-- weight variables
-	local current_inv_weight = db.actor:get_total_weight()
-	local max_inv_weight = get_max_inv_weight()
-	local overweight = current_inv_weight > max_inv_weight
+   -- weight variables
+   local current_inv_weight = db.actor:get_total_weight()
+   local max_inv_weight = get_max_inv_weight()
+   local overweight = current_inv_weight > max_inv_weight
 
-	-- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
-	if WET_WEATHER[current_weather] or overweight then
-		HEALTH_AMOUNT_TRIGGER = 1
-	end
+   -- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
+   if WET_WEATHER[current_weather] or overweight then
+      HEALTH_AMOUNT_TRIGGER = 1
+   end
 
    if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
 
