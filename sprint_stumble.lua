@@ -153,11 +153,9 @@ function actor_on_footstep(mat)
 		local stability = 100
 
 		-- total all factors and deduc it to 100
-		-- total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
 		total_stability = total_stability - (weather_factor + health_factor + inv_weight_factor)
 
-		-- chance of stumbling
-		-- the lower the total_stability, the higher the chance it will pick 0
+		-- the lower the computed stability, the higher the chance it will pick 0
 		stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
 		stability = math.random(0, stability)
 
@@ -179,6 +177,7 @@ function actor_on_footstep(mat)
 			level.release_action(bind_to_dik(key_bindings.kACCEL))
 		end
 
+		-- logs for the concole (press "`" in game)
 		if CONSOLE_LOG then
 			printf("material: " .. mat)
 			printf("current_weather: " .. current_weather)

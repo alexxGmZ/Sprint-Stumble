@@ -163,3 +163,67 @@ if stability == 0 then
    level.release_action(bind_to_dik(key_bindings.kACCEL))
 end
 ```
+
+<br>
+
+
+### Triggers For Stumbling
+
+#### Health Amount
+If the current health amount is less than or equal to the value of the ```HEALTH_AMOUNT_TRIGGER```
+variable, which can be assigned in the MCM Menu for this addon
+
+#### Rain or Storm Weathers
+Even if the current health amount is greater than the value of ```HEALTH_AMOUNT_TRIGGER```
+variable, as long as it is raining then the character will stumble when sprinting.
+
+#### Overweight
+Same as the Rain or Storm Weathers, it will ignore the Health Amount Trigger. It is when
+the current inventory weight is greater than the maximum inventory weight.
+
+#### Sprinting
+The character will stumble when sprinting, it still depends on the three triggers above.
+
+```lua
+local WET_WEATHER = {
+	w_rain1 = true,
+	w_rain2 = true,
+	w_rain3 = true,
+	w_storm1 = true,
+	w_storm2 = true,
+}
+
+-- get the assigned value in MCM
+function load_settings()
+   if ui_mcm then
+      HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER")
+   end
+end
+
+function actor_on_footstep(mat)
+	-- health amount variable
+	local health = db.actor.health
+
+	-- current weather variable
+	local current_weather = FIRST_LEVEL_WEATHER or get_current_weather_file()
+
+	-- weight variables
+	local current_inv_weight = db.actor:get_total_weight()
+	local max_inv_weight = get_max_inv_weight()
+	local overweight = current_inv_weight > max_inv_weight
+
+	-- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
+	if WET_WEATHER[current_weather] or overweight then
+		HEALTH_AMOUNT_TRIGGER = 1
+	end
+
+   if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
+
+      -- compute stability here
+
+   end
+end
+
+```
+
+<br>
