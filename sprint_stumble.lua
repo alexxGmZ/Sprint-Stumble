@@ -108,8 +108,8 @@ function actor_on_footstep(mat)
 	local max_inv_weight = get_max_inv_weight()
 	local overweight = current_inv_weight > max_inv_weight
 
-	-- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
-	if WET_WEATHER[current_weather] or overweight then
+	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
+	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() then
 		HEALTH_AMOUNT_TRIGGER = 1
 	end
 
@@ -126,6 +126,7 @@ function actor_on_footstep(mat)
 			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
 		end
 
+		-- the weather factor should be less than or equal to MAX_WEATHER_TO_MATERIAL_MULTIPLIER
 		if weather_factor > MAX_WEATHER_TO_MATERIAL_MULTIPLIER then
 			weather_factor = MAX_WEATHER_TO_MATERIAL_MULTIPLIER
 		end
@@ -136,7 +137,6 @@ function actor_on_footstep(mat)
 		local inv_weight_factor = 0
 		local rnd_inv_weight_factor = 0
 
-		-- if stability is 0 based on randomization then the character will stumble
 		-- inventory weight factor
 		if overweight then
 			inv_weight_factor = INV_WEIGHT_MULTIPLIER
@@ -159,7 +159,7 @@ function actor_on_footstep(mat)
 		stability = stability - (rnd_weather_factor + rnd_inv_weight_factor + health_factor)
 		stability = math.random(0, stability)
 
-		-- if stability is 0 based on randomization then the character will stumble
+		-- when stability is 0 based on randomization then the character will stumble
 		if stability == 0 then
 			-- jump to prone when stumbled
 			level.press_action(bind_to_dik(key_bindings.kCROUCH))
