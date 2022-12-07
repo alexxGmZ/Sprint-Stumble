@@ -196,7 +196,7 @@ local WET_WEATHER = {
 -- get the assigned value in MCM
 function load_settings()
    if ui_mcm then
-      HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER")
+      HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER") * 0.01
    end
 end
 

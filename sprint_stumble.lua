@@ -84,10 +84,10 @@ end
 
 local FIRST_LEVEL_WEATHER = nil
 function actor_on_first_update()
+	FIRST_LEVEL_WEATHER = get_current_weather_file()
+
 	if is_blowout_psistorm_weather() and DEBUG_MODE then
 		FIRST_LEVEL_WEATHER = nil
-	else
-		FIRST_LEVEL_WEATHER = get_current_weather_file()
 	end
 	RemoveTimeEvent("reset_first_level_weather", "reset_first_level_weather")
 end
