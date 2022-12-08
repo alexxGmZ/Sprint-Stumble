@@ -109,9 +109,7 @@ function actor_on_footstep(mat)
 	local overweight = current_inv_weight > max_inv_weight
 
 	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
-	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or
-		string.find(mat, "water") or string.find(mat, "gravel") or
-		string.find(mat, "dead_body") or string.find(mat, "monster_body") then
+	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or string.find(mat, "water") then
 		HEALTH_AMOUNT_TRIGGER = 1
 	end
 
@@ -189,6 +187,7 @@ function actor_on_footstep(mat)
 			printf("max_weight: " .. max_inv_weight)
 			printf("--------------------")
 			printf("health_factor: " .. health_factor)
+			printf("HEALTH_AMOUNT_TRIGGER %s", HEALTH_AMOUNT_TRIGGER)
 			printf("--------------------")
 			printf("overweight %s", overweight)
 			printf("inv_weight_factor: " .. inv_weight_factor)
