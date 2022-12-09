@@ -109,8 +109,10 @@ function actor_on_footstep(mat)
 	local overweight = current_inv_weight > max_inv_weight
 
 	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
-	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() then
+	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or string.find(mat, "water") then
 		HEALTH_AMOUNT_TRIGGER = 1
+	else
+		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER") * 0.01
 	end
 
 	-- the stumbling will only happen when sprinting
@@ -120,11 +122,7 @@ function actor_on_footstep(mat)
 
 		-- weather to material factor variables
 		local weather_factor = MATERIAL_MULTIPLIER[mat] or DEFAULT_MATERIAL_MULTIPLIER
-		-- if is_blowout_psistorm_weather() then
-		-- 	weather_factor = BLOWOUT_PSISTORM_WEATHER_MULTIPLIER
-		-- elseif WET_WEATHER[current_weather] then
-		-- 	weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
-		-- end
+
 		if WET_WEATHER[current_weather] then
 			weather_factor = WET_WEATHER_MATERIAL_MULTIPLIER[mat] or DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER
 		elseif is_blowout_psistorm_weather() then
@@ -191,6 +189,7 @@ function actor_on_footstep(mat)
 			printf("max_weight: " .. max_inv_weight)
 			printf("--------------------")
 			printf("health_factor: " .. health_factor)
+			printf("HEALTH_AMOUNT_TRIGGER %s", HEALTH_AMOUNT_TRIGGER)
 			printf("--------------------")
 			printf("overweight %s", overweight)
 			printf("inv_weight_factor: " .. inv_weight_factor)
