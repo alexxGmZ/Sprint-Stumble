@@ -111,6 +111,8 @@ function actor_on_footstep(mat)
 	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
 	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or string.find(mat, "water") then
 		HEALTH_AMOUNT_TRIGGER = 1
+	else
+		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER") * 0.01
 	end
 
 	-- the stumbling will only happen when sprinting
