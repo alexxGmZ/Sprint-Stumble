@@ -112,7 +112,7 @@ function actor_on_footstep(mat)
 	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
 	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or
 		string.find(mat, "water") or string.find(mat, "gravel") or string.find(mat, "dead_body") or
-		string.find(mat, "monster_body") or string.find(mat, "grass") or string.find(mat, "tree_trunk") then
+		string.find(mat, "monster_body") or string.find(mat, "bush") or string.find(mat, "tree_trunk") then
 		health_amount_trigger = 1
 	else
 		health_amount_trigger = HEALTH_AMOUNT_TRIGGER
