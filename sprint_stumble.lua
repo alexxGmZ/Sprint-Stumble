@@ -11,11 +11,11 @@ local CreateTimeEvent = demonized_time_events.CreateTimeEvent
 local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
 -- change these values in sprint_stumble_mcm.script
-local ENABLE = true
+local ENABLE
 local HEALTH_AMOUNT_TRIGGER
-local DEBUG_MODE = false
-local CONSOLE_LOG = false
-local BANDIT_PAIN = false
+local DEBUG_MODE
+local CONSOLE_LOG
+local BANDIT_PAIN
 -- change these values in sprint_stumble_mcm.script
 
 local HEALTH_MULTIPLIER = 40
@@ -92,6 +92,7 @@ function actor_on_first_update()
 	RemoveTimeEvent("reset_first_level_weather", "reset_first_level_weather")
 end
 
+-- "mat" is the ground material
 function actor_on_footstep(mat)
 	if not ENABLE then
 		return
@@ -107,15 +108,13 @@ function actor_on_footstep(mat)
 	local current_inv_weight = db.actor:get_total_weight()
 	local max_inv_weight = get_max_inv_weight()
 	local overweight = current_inv_weight > max_inv_weight
-	local health_amount_trigger = 0
+	local health_amount_trigger = HEALTH_AMOUNT_TRIGGER
 
-	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
+	-- override HEALTH_AMOUNT_TRIGGER
 	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or
 		string.find(mat, "water") or string.find(mat, "gravel") or string.find(mat, "dead_body") or
 		string.find(mat, "monster_body") or string.find(mat, "bush") or string.find(mat, "tree_trunk") then
 		health_amount_trigger = 1
-	else
-		health_amount_trigger = HEALTH_AMOUNT_TRIGGER
 	end
 
 	-- the stumbling will only happen when sprinting
