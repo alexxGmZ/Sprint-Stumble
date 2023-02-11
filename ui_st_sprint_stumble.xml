@@ -14,7 +14,7 @@
 	</string>
 
 	<string id="ui_mcm_sprint_stumble_ENABLE_desc">
-		<text>Enable Sprint Stumbl</text>
+		<text>Enable Sprint Stumble</text>
 	</string>
 	<!-- Enable -->
 
@@ -26,7 +26,6 @@
 	<string id="ui_mcm_sprint_stumble_HEALTH_AMOUNT_TRIGGER_desc">
 		<text>The amount of health where Stumbling will happen</text>
 	</string>
-
 	<!-- Health Amount Trigger -->
 
 	<!-- Debug Mode -->
@@ -49,6 +48,7 @@
 	</string>
 	<!-- Console log -->
 
+	<!-- Bandit Pain Sounds -->
 	<string id="ui_mcm_sprint_stumble_BANDIT_PAIN">
 		<text>Bandit Pain Sounds</text>
 	</string>
@@ -56,10 +56,9 @@
 	<string id="ui_mcm_sprint_stumble_BANDIT_PAIN_desc">
 		<text>Play Bandit pain sounds when stumbled. (For Fun)</text>
 	</string>
+	<!-- Bandit Pain Sounds -->
 
 	<!-- <string id="ui_mcm_sprint_stumble_"> -->
 	<!-- 	<text></text> -->
 	<!-- </string> -->
-
-
 </string_table>

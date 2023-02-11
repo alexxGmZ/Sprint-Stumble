@@ -11,11 +11,11 @@ local CreateTimeEvent = demonized_time_events.CreateTimeEvent
 local RemoveTimeEvent = demonized_time_events.RemoveTimeEvent
 
 -- change these values in sprint_stumble_mcm.script
-local ENABLE = true
+local ENABLE
 local HEALTH_AMOUNT_TRIGGER
-local DEBUG_MODE = false
-local CONSOLE_LOG = false
-local BANDIT_PAIN = false
+local DEBUG_MODE
+local CONSOLE_LOG
+local BANDIT_PAIN
 -- change these values in sprint_stumble_mcm.script
 
 local HEALTH_MULTIPLIER = 40
@@ -92,6 +92,7 @@ function actor_on_first_update()
 	RemoveTimeEvent("reset_first_level_weather", "reset_first_level_weather")
 end
 
+-- "mat" is the ground material
 function actor_on_footstep(mat)
 	if not ENABLE then
 		return
@@ -107,16 +108,17 @@ function actor_on_footstep(mat)
 	local current_inv_weight = db.actor:get_total_weight()
 	local max_inv_weight = get_max_inv_weight()
 	local overweight = current_inv_weight > max_inv_weight
+	local health_amount_trigger = HEALTH_AMOUNT_TRIGGER
 
-	-- override HEALTH_AMOUNT_TRIGGER when it's a wet weather or overweight
-	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or string.find(mat, "water") then
-		HEALTH_AMOUNT_TRIGGER = 1
-	else
-		HEALTH_AMOUNT_TRIGGER = ui_mcm.get("sprint_stumble/HEALTH_AMOUNT_TRIGGER") * 0.01
+	-- override HEALTH_AMOUNT_TRIGGER
+	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or
+		string.find(mat, "water") or string.find(mat, "gravel") or string.find(mat, "dead_body") or
+		string.find(mat, "monster_body") or string.find(mat, "bush") or string.find(mat, "tree_trunk") then
+		health_amount_trigger = 1
 	end
 
 	-- the stumbling will only happen when sprinting
-	if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
+	if health <= health_amount_trigger and IsMoveState('mcSprint') then
 		-- health factor variable
 		local health_factor = denormalize(health, HEALTH_MULTIPLIER, 0) or 0
 
@@ -189,7 +191,8 @@ function actor_on_footstep(mat)
 			printf("max_weight: " .. max_inv_weight)
 			printf("--------------------")
 			printf("health_factor: " .. health_factor)
-			printf("HEALTH_AMOUNT_TRIGGER %s", HEALTH_AMOUNT_TRIGGER)
+			printf("HEALTH_AMOUNT_TRIGGER " .. health_amount_trigger)
+			printf("health " .. health)
 			printf("--------------------")
 			printf("overweight %s", overweight)
 			printf("inv_weight_factor: " .. inv_weight_factor)
@@ -204,7 +207,6 @@ function actor_on_footstep(mat)
 		end
 	end
 end
-
 
 -- copied from ui_inventory.script
 function get_max_inv_weight()

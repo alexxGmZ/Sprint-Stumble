@@ -18,8 +18,11 @@ weight, and health**.
 
 ## How it Works
 
-The computation of the probability is **not 0 to 1 but 0 to 100**. So 10% is not 0.1 but
-10, 25% is not 0.25 but 25%.
+The computation of the probability is **not 0 to 1 but 0 to 100**. So,
+```
+10% is not 0.1 but 10
+25% is not 0.25 but 25%.
+```
 
 <br>
 
@@ -32,8 +35,8 @@ local MAX_WEATHER_TO_MATERIAL_MULTIPLIER = 30
 ```
 
 Ground materials increases the chance of stumbling depending on the weather. If the
-materials are not listed below the MATERIAL_MULTIPLIER variable, the default value is
-going to be the value of DEFAULT_MATERIAL_MULTIPLIER.
+materials are not listed below the ```MATERIAL_MULTIPLIER``` variable, the default value is
+going to be the value of ```DEFAULT_MATERIAL_MULTIPLIER```.
 ```lua
 -- dry weather material factor
 local DEFAULT_MATERIAL_MULTIPLIER = 5
@@ -53,8 +56,8 @@ local MATERIAL_MULTIPLIER = {
 ```
 
 The chances increases during rainy or stormy weathers. If the materials are not inside the
-WET_WEATHER_MATERIAL_MULTIPLIER, then the default value will be the value of
-DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER.
+```WET_WEATHER_MATERIAL_MULTIPLIER```, then the default value will be the value of
+```DEFAULT_WET_WEATHER_MATERIAL_MULTIPLIER```.
 ```lua
 local WET_WEATHER = {
    w_rain1 = true,
@@ -171,18 +174,32 @@ end
 
 #### Health Amount
 If the current health amount is less than or equal to the value of the ```HEALTH_AMOUNT_TRIGGER```
-variable, which can be assigned in the MCM Menu for this addon
+variable, which can be assigned in the MCM Menu for this addon.
 
 #### Rain or Storm Weathers
 Even if the current health amount is greater than the value of ```HEALTH_AMOUNT_TRIGGER```
 variable, as long as it is raining then the character will stumble when sprinting.
 
+#### Psi Storm or Emission
+To add some thrill. Imagine when panic kicks in and the only thing that is running in your
+mind is to find the nearest shelter without any consideration of your surroundings.
+
 #### Overweight
-Same as the Rain or Storm Weathers, it will ignore the Health Amount Trigger. It is when
-the current inventory weight is greater than the maximum inventory weight.
+Same as the Rain or Storm Weathers, it will ignore the ```HEALTH_AMOUNT_TRIGGER```. It is
+when the current inventory weight is greater than the maximum inventory weight. It kinda
+serves as a penalty.
+
+#### Ground Material
+Take into consideration on what ground material you are stepping in. These ground materials
+are:
+```
+water      monster_body
+gravel     bush
+dead_body  tree_trunk
+```
 
 #### Sprinting
-The character will stumble when sprinting, it still depends on the three triggers above.
+The character will stumble when sprinting, it still depends on the triggers above.
 
 ```lua
 local WET_WEATHER = {
@@ -211,13 +228,16 @@ function actor_on_footstep(mat)
    local current_inv_weight = db.actor:get_total_weight()
    local max_inv_weight = get_max_inv_weight()
    local overweight = current_inv_weight > max_inv_weight
+	local health_amount_trigger = HEALTH_AMOUNT_TRIGGER
 
-   -- override HEALTH_AMOUNT_TRIGGER if it's a wet weather or overweight
-   if WET_WEATHER[current_weather] or overweight then
-      HEALTH_AMOUNT_TRIGGER = 1
-   end
+   -- override HEALTH_AMOUNT_TRIGGER if the conditions are met
+	if WET_WEATHER[current_weather] or overweight or is_blowout_psistorm_weather() or
+		string.find(mat, "water") or string.find(mat, "gravel") or string.find(mat, "dead_body") or
+		string.find(mat, "monster_body") or string.find(mat, "bush") or string.find(mat, "tree_trunk") then
+		health_amount_trigger = 1
+	end
 
-   if health <= HEALTH_AMOUNT_TRIGGER and IsMoveState('mcSprint') then
+   if health <= health_amount_trigger and IsMoveState('mcSprint') then
 
       -- compute stability here
 
